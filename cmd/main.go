@@ -15,7 +15,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-const grpcPort = 50052
+const grpcPort = 50051
 
 type server struct {
 	gchat.UnimplementedChatV1Server
@@ -44,10 +44,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	s := grpc.NewServer()
 	reflection.Register(s)
 	gchat.RegisterChatV1Server(s, &server{})
+
 	fmt.Println(color.GreenString("run server at %s", lis.Addr()))
+
 	if err = s.Serve(lis); err != nil {
 		log.Fatal(err)
 	}
