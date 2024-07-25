@@ -5,7 +5,7 @@ WORKDIR /github.com/ukrainskykirill/chat-server/source
 
 
 RUN go mod download
-RUN go build -o ./bin/chat_server cmd/main.go
+RUN go build -o ./bin/chat_server cmd/chat-server/main.go
 
 FROM alpine:latest
 
