@@ -58,7 +58,13 @@ jobs:
               docker rm $CONTAINER_NAME
               
               # Run a new container from a new image
-              docker run -d -p 50051:50051 --name $CONTAINER_NAME -t $REGISTRY/$IMAGE_NAME:$TAG_NAME
+              docker run -d -p 50051:50051 --name $CONTAINER_NAME -t $REGISTRY/$IMAGE_NAME:$TAG_NAME \
+              -e DB_USER=${{ secrets.DB_USER }} \
+              -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+              -e DB_PORT=${{ secrets.DB_PORT }} \
+              -e DB_DATABASE_NAME=${{ secrets.DB_DATABASE_NAME }} \
+              -e SSL_MODE=${{ secrets.SSL_MODE }} \
+              -e DB_HOST=${{ secrets.DB_HOST }}
 
   migration-build:
     runs-on: ubuntu-latest
