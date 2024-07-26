@@ -72,6 +72,7 @@ func loadGRPCConfig() (*grpcConfig, error) {
 	if !ok {
 		return &grpcConfig{}, errVariableNotFound
 	}
+
 	intPort, err := strconv.Atoi(port)
 	if err != nil {
 		return &grpcConfig{}, err
@@ -92,6 +93,7 @@ func loadAppConfig() (*AppConfig, error) {
 	if err != nil {
 		return &AppConfig{}, err
 	}
+
 	grpcConfig, err := loadGRPCConfig()
 	if err != nil {
 		return &AppConfig{}, err
@@ -108,14 +110,7 @@ func InitConfig() (*AppConfig, error) {
 	if err != nil {
 		fmt.Println("Error loading .env file")
 	}
-	fmt.Println(
-		os.Getenv("GRPC_PORT"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_DATABASE_NAME"),
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-	)
+
 	config, err := loadAppConfig()
 	if err != nil {
 		return &AppConfig{}, err
