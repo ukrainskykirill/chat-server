@@ -37,7 +37,8 @@ jobs:
           --build-arg DB_DATABASE_NAME=${{ secrets.DB_DATABASE_NAME }} \
           --build-arg MIGRATION_DIR=${{ secrets.MIGRATION_DIR }} \
           --build-arg SSL_MODE=${{ secrets.SSL_MODE }} \
-          --build-arg DB_HOST=${{ secrets.DB_HOST }}
+          --build-arg DB_HOST=${{ secrets.DB_HOST }} \
+          --build-arg GRPC_PORT=${{ secrets.GRPC_PORT }}
 
   deploy-image:
       runs-on: ubuntu-latest

@@ -8,6 +8,7 @@ ARG DB_PASSWORD
 ARG DB_HOST
 ARG DB_PORT
 ARG DB_DATABASE_NAME
+ARG GRPC_PORT
 
 RUN go mod download
 RUN go build -o ./bin/chat_server cmd/chat-server/main.go
@@ -17,6 +18,7 @@ ENV DB_PASSWORD=${DB_PASSWORD}
 ENV DB_HOST=${DB_HOST}
 ENV DB_PORT=${DB_PORT}
 ENV DB_DATABASE_NAME=${DB_DATABASE_NAME}
+ENV GRPC_PORT=${GRPC_PORT}
 
 FROM alpine:latest
 
