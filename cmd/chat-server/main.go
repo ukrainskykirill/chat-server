@@ -2,15 +2,16 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"net"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/jackc/pgx/v5"
 	pool "github.com/jackc/pgx/v5/pgxpool"
-
-	"github.com/fatih/color"
 	"github.com/ukrainskykirill/chat-server/internal/config"
 	gchat "github.com/ukrainskykirill/chat-server/pkg/chat_v1"
 	"google.golang.org/grpc"
@@ -149,7 +150,11 @@ func (s *server) SendMessage(ctx context.Context, req *gchat.SendMessageRequest)
 		req.From,
 	).Scan(&chatUserID)
 	if err != nil {
-		return nil, status.Error(codes.NotFound, err.Error())
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, status.Error(codes.NotFound, err.Error())
+		} else {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
 	}
 
 	_, err = tx.Exec(
