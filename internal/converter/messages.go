@@ -11,7 +11,8 @@ func ToModelMessageIn(msgIn *gchat.SendMessageRequest) *model.MessageIn {
 	timestamp := msgIn.Timestamp.AsTime().Format(time.UnixDate)
 
 	return &model.MessageIn{
-		ChatID:    1,
+		ChatID:    msgIn.ChatID,
+		UserID:    msgIn.UserId,
 		Text:      msgIn.Text,
 		Timestamp: timestamp,
 	}
