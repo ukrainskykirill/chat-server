@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+
 	"github.com/jackc/pgx/v4"
 
 	"github.com/jackc/pgconn"
@@ -41,6 +42,7 @@ type QueryExecer interface {
 	ExecContext(ctx context.Context, q Query, args ...interface{}) (pgconn.CommandTag, error)
 	QueryContext(ctx context.Context, q Query, args ...interface{}) (pgx.Rows, error)
 	QueryRowContext(ctx context.Context, q Query, args ...interface{}) pgx.Row
+	CopyFrom(ctx context.Context, dest string, rows []string, args [][]any) (int64, error)
 }
 
 type Pinger interface {

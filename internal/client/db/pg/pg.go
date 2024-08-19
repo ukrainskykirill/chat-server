@@ -74,6 +74,21 @@ func (p *pg) QueryContext(ctx context.Context, q db.Query, args ...interface{}) 
 	return p.dbc.Query(ctx, q.QueryRaw, args...)
 }
 
+func (p *pg) CopyFrom(ctx context.Context, dest string, rows []string, args [][]any) (int64, error) {
+
+	tx, ok := ctx.Value(TxKey).(pgx.Tx)
+	if ok {
+		return tx.CopyFrom(
+			ctx,
+			pgx.Identifier{dest},
+			rows,
+			pgx.CopyFromRows(args),
+		)
+	}
+
+	return p.dbc.CopyFrom(ctx, pgx.Identifier{dest}, rows, pgx.CopyFromRows(args))
+}
+
 func (p *pg) QueryRowContext(ctx context.Context, q db.Query, args ...interface{}) pgx.Row {
 	logQuery(ctx, q, args...)
 

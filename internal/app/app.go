@@ -7,12 +7,13 @@ import (
 	"net"
 
 	"github.com/fatih/color"
-	"github.com/ukrainskykirill/chat-server/internal/closer"
-	"github.com/ukrainskykirill/chat-server/internal/config"
-	gchat "github.com/ukrainskykirill/chat-server/pkg/chat_v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
+
+	"github.com/ukrainskykirill/chat-server/internal/closer"
+	"github.com/ukrainskykirill/chat-server/internal/config"
+	gchat "github.com/ukrainskykirill/chat-server/pkg/chat_v1"
 )
 
 type App struct {

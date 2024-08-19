@@ -77,12 +77,12 @@ func (sp *serviceProvider) DBClient(ctx context.Context) db.Client {
 	return sp.dbClient
 }
 
-func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
-	if s.txManager == nil {
-		s.txManager = transaction.NewTransactionManager(s.DBClient(ctx).DB())
+func (sp *serviceProvider) TxManager(ctx context.Context) db.TxManager {
+	if sp.txManager == nil {
+		sp.txManager = transaction.NewTransactionManager(sp.DBClient(ctx).DB())
 	}
 
-	return s.txManager
+	return sp.txManager
 }
 
 func (sp *serviceProvider) ChatRepo(ctx context.Context) repository.ChatsRepository {
@@ -103,7 +103,9 @@ func (sp *serviceProvider) MsgRepo(ctx context.Context) repository.MessagesRepos
 
 func (sp *serviceProvider) ChatService(ctx context.Context) service.ChatsService {
 	if sp.chatServ == nil {
-		sp.chatServ = chatServ.NewServ(sp.ChatRepo(ctx))
+		sp.chatServ = chatServ.NewServ(
+			sp.TxManager(ctx), sp.ChatRepo(ctx), sp.MsgRepo(ctx),
+		)
 	}
 
 	return sp.chatServ
