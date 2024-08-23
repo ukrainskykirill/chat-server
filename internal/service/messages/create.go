@@ -9,14 +9,6 @@ import (
 )
 
 func (s *messagesServ) Create(ctx context.Context, msgIn *model.MessageIn) error {
-	isExist, err := s.chatsRepo.IsExistsByID(ctx, msgIn.ChatID)
-	if err != nil {
-		return err
-	}
-	if !isExist {
-		return fmt.Errorf("msg service.Create - %w", prError.ErrChatNotFound)
-	}
-
 	isParticipant, err := s.chatsRepo.IsUserParticipant(ctx, msgIn.ChatID, msgIn.UserID)
 	if err != nil {
 		return err

@@ -2,12 +2,14 @@ package chats
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/fatih/color"
 
 	"github.com/ukrainskykirill/chat-server/internal/client/db"
+	prError "github.com/ukrainskykirill/chat-server/internal/error"
 	"github.com/ukrainskykirill/chat-server/internal/repository"
 )
 
@@ -19,11 +21,10 @@ const (
 	chatUsersCreatedAtColumn = "created_at"
 	chatUsersUpdatedAtColumn = "updated_at"
 	createChat               = chatsRepo + "." + "CreateChat"
-	isExistsByUserIDs        = chatsRepo + "." + "IsExistsByUserIds"
-	isExistByID              = chatsRepo + "." + "IsExistByID"
 	deleteChat               = chatsRepo + "." + "DeleteChat"
 	deleteChatUsers          = chatsRepo + "." + "DeleteChatUsers"
 	getChatUserID            = chatsRepo + "." + "GetChatUserId"
+	isUserParticipant        = chatsRepo + "." + "IsUserParticipant"
 )
 
 type repo struct {
@@ -72,6 +73,9 @@ func (r *repo) GetChatUserID(ctx context.Context, chatID int64, userID int64) (i
 		userID,
 	).Scan(&chatUserID)
 	if err != nil {
+		if errors.Is(err, prError.ErrChatUserNotFound) {
+			return 0, prError.ErrChatUserNotFound
+		}
 		return 0, err
 	}
 
@@ -111,7 +115,7 @@ func (r *repo) DeleteChat(ctx context.Context, chatID int64) error {
 		QueryRaw: rowSQL,
 	}
 
-	_, err := r.db.DB().ExecContext(
+	tag, err := r.db.DB().ExecContext(
 		ctx,
 		q,
 		chatID,
@@ -119,6 +123,11 @@ func (r *repo) DeleteChat(ctx context.Context, chatID int64) error {
 	if err != nil {
 		return err
 	}
+
+	if tag.RowsAffected() == 0 {
+		return prError.ErrChatNotFound
+	}
+
 	return nil
 }
 
@@ -138,38 +147,17 @@ func (r *repo) DeleteChatUsers(ctx context.Context, chatID int64) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
-func (r *repo) IsExistsByID(ctx context.Context, chatID int64) (bool, error) {
-	var isExist bool
-
-	rowSQL := `SELECT EXISTS(SELECT 1 FROM chats WHERE id = $1);`
-
-	q := db.Query{
-		Name:     isExistByID,
-		QueryRaw: rowSQL,
-	}
-
-	err := r.db.DB().QueryRowContext(
-		ctx,
-		q,
-		chatID,
-	).Scan(&isExist)
-	if err != nil {
-		return false, err
-	}
-
-	return isExist, nil
-}
-
 func (r *repo) IsUserParticipant(ctx context.Context, chatID int64, userID int64) (bool, error) {
-	var isExist bool
+	var isParticipant bool
 
 	rowSQL := `SELECT EXISTS(SELECT 1 FROM chat_users WHERE chat_id = $1 and user_id = $2);`
 
 	q := db.Query{
-		Name:     isExistByID,
+		Name:     isUserParticipant,
 		QueryRaw: rowSQL,
 	}
 
@@ -178,10 +166,10 @@ func (r *repo) IsUserParticipant(ctx context.Context, chatID int64, userID int64
 		q,
 		chatID,
 		userID,
-	).Scan(&isExist)
+	).Scan(&isParticipant)
 	if err != nil {
 		return false, err
 	}
 
-	return isExist, nil
+	return isParticipant, nil
 }
