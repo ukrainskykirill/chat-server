@@ -150,26 +150,3 @@ func (r *repo) DeleteChatUsers(ctx context.Context, chatID int64) error {
 
 	return nil
 }
-
-func (r *repo) IsUserParticipant(ctx context.Context, chatID int64, userID int64) (bool, error) {
-	var isParticipant bool
-
-	rowSQL := `SELECT EXISTS(SELECT 1 FROM chat_users WHERE chat_id = $1 and user_id = $2);`
-
-	q := db.Query{
-		Name:     isUserParticipant,
-		QueryRaw: rowSQL,
-	}
-
-	err := r.db.DB().QueryRowContext(
-		ctx,
-		q,
-		chatID,
-		userID,
-	).Scan(&isParticipant)
-	if err != nil {
-		return false, err
-	}
-
-	return isParticipant, nil
-}

@@ -19,7 +19,7 @@ func (i *Implementation) SendMessage(ctx context.Context, req *gchat.SendMessage
 		switch {
 		case errors.Is(err, prError.ErrChatNotFound):
 			return nil, status.Error(codes.NotFound, err.Error())
-		case errors.Is(err, prError.ErrUserIsNotParticipant):
+		case errors.Is(err, prError.ErrChatUserNotFound):
 			return nil, status.Error(codes.PermissionDenied, err.Error())
 		default:
 			return nil, status.Error(codes.Internal, err.Error())
