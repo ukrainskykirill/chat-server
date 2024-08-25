@@ -16,16 +16,15 @@ import (
 	"github.com/ukrainskykirill/chat-server/internal/service/chats"
 )
 
-func TestCreate(t *testing.T) {
+func TestDelete(t *testing.T) {
 	t.Parallel()
 	type chatsRepoMockFunc func(mc *minimock.Controller) repository.ChatsRepository
 	type msgRepoMockFunc func(mc *minimock.Controller) repository.MessagesRepository
 	type txManagerMockFunc func(f db.Handler, mc *minimock.Controller) db.TxManager
 
 	type args struct {
-		ctx       context.Context
-		userIDs   []int64
-		isRegular bool
+		ctx    context.Context
+		chatId int64
 	}
 
 	var (
@@ -33,16 +32,13 @@ func TestCreate(t *testing.T) {
 		mc      = minimock.NewController(t)
 		repoErr = fmt.Errorf("repo error")
 
-		id        = gofakeit.Int64()
-		userIDs   = []int64{gofakeit.Int64(), gofakeit.Int64()}
-		isRegular = true
+		chatId = gofakeit.Int64()
 	)
 	defer t.Cleanup(mc.Finish)
 
 	tests := []struct {
 		name          string
 		args          args
-		want          int64
 		err           error
 		chatsRepoMock chatsRepoMockFunc
 		msgRepoMock   msgRepoMockFunc
@@ -51,20 +47,19 @@ func TestCreate(t *testing.T) {
 		{
 			name: "success case",
 			args: args{
-				ctx:       ctx,
-				userIDs:   userIDs,
-				isRegular: isRegular,
+				ctx:    ctx,
+				chatId: chatId,
 			},
-			want: id,
-			err:  nil,
+			err: nil,
 			chatsRepoMock: func(mc *minimock.Controller) repository.ChatsRepository {
 				mock := repoMocks.NewChatsRepositoryMock(mc)
-				mock.CreateMock.Expect(ctx, isRegular).Return(id, nil)
-				mock.CreateChatUsersMock.Expect(ctx, id, userIDs).Return(nil)
+				mock.DeleteChatUsersMock.Expect(ctx, chatId).Return(nil)
+				mock.DeleteChatMock.Expect(ctx, chatId).Return(nil)
 				return mock
 			},
 			msgRepoMock: func(mc *minimock.Controller) repository.MessagesRepository {
 				mock := repoMocks.NewMessagesRepositoryMock(mc)
+				mock.DeleteByChatIDMock.Expect(ctx, chatId).Return(nil)
 				return mock
 			},
 			txManagerMock: func(f db.Handler, mc *minimock.Controller) db.TxManager {
@@ -78,19 +73,17 @@ func TestCreate(t *testing.T) {
 		{
 			name: "error case 1",
 			args: args{
-				ctx:       ctx,
-				userIDs:   userIDs,
-				isRegular: isRegular,
+				ctx:    ctx,
+				chatId: chatId,
 			},
-			want: 0,
-			err:  repoErr,
+			err: repoErr,
 			chatsRepoMock: func(mc *minimock.Controller) repository.ChatsRepository {
 				mock := repoMocks.NewChatsRepositoryMock(mc)
-				mock.CreateMock.Expect(ctx, isRegular).Return(0, repoErr)
 				return mock
 			},
 			msgRepoMock: func(mc *minimock.Controller) repository.MessagesRepository {
 				mock := repoMocks.NewMessagesRepositoryMock(mc)
+				mock.DeleteByChatIDMock.Expect(ctx, chatId).Return(repoErr)
 				return mock
 			},
 			txManagerMock: func(f db.Handler, mc *minimock.Controller) db.TxManager {
@@ -104,20 +97,44 @@ func TestCreate(t *testing.T) {
 		{
 			name: "error case 2",
 			args: args{
-				ctx:       ctx,
-				userIDs:   userIDs,
-				isRegular: isRegular,
+				ctx:    ctx,
+				chatId: chatId,
 			},
-			want: 0,
-			err:  repoErr,
+			err: repoErr,
 			chatsRepoMock: func(mc *minimock.Controller) repository.ChatsRepository {
 				mock := repoMocks.NewChatsRepositoryMock(mc)
-				mock.CreateMock.Expect(ctx, isRegular).Return(id, nil)
-				mock.CreateChatUsersMock.Expect(ctx, id, userIDs).Return(repoErr)
+				mock.DeleteChatUsersMock.Expect(ctx, chatId).Return(repoErr)
 				return mock
 			},
 			msgRepoMock: func(mc *minimock.Controller) repository.MessagesRepository {
 				mock := repoMocks.NewMessagesRepositoryMock(mc)
+				mock.DeleteByChatIDMock.Expect(ctx, chatId).Return(nil)
+				return mock
+			},
+			txManagerMock: func(f db.Handler, mc *minimock.Controller) db.TxManager {
+				mock := txMocks.NewTxManagerMock(mc)
+				mock.ReadCommittedMock.Set(func(ctx context.Context, f db.Handler) (err error) {
+					return f(ctx)
+				})
+				return mock
+			},
+		},
+		{
+			name: "error case 3",
+			args: args{
+				ctx:    ctx,
+				chatId: chatId,
+			},
+			err: repoErr,
+			chatsRepoMock: func(mc *minimock.Controller) repository.ChatsRepository {
+				mock := repoMocks.NewChatsRepositoryMock(mc)
+				mock.DeleteChatUsersMock.Expect(ctx, chatId).Return(nil)
+				mock.DeleteChatMock.Expect(ctx, chatId).Return(repoErr)
+				return mock
+			},
+			msgRepoMock: func(mc *minimock.Controller) repository.MessagesRepository {
+				mock := repoMocks.NewMessagesRepositoryMock(mc)
+				mock.DeleteByChatIDMock.Expect(ctx, chatId).Return(nil)
 				return mock
 			},
 			txManagerMock: func(f db.Handler, mc *minimock.Controller) db.TxManager {
@@ -140,11 +157,15 @@ func TestCreate(t *testing.T) {
 
 			txManager := tt.txManagerMock(
 				func(context.Context) error {
-					chatID, err := tt.chatsRepoMock(mc).Create(ctx, isRegular)
+					err := tt.msgRepoMock(mc).DeleteByChatID(ctx, chatId)
 					if err != nil {
 						return err
 					}
-					err = tt.chatsRepoMock(mc).CreateChatUsers(ctx, chatID, userIDs)
+					err = tt.chatsRepoMock(mc).DeleteChatUsers(ctx, chatId)
+					if err != nil {
+						return err
+					}
+					err = tt.chatsRepoMock(mc).DeleteChat(ctx, chatId)
 					if err != nil {
 						return err
 					}
@@ -156,9 +177,8 @@ func TestCreate(t *testing.T) {
 				txManager, chatsRepo, msgRepo,
 			)
 
-			id, err := service.Create(tt.args.ctx, tt.args.userIDs)
+			err := service.Delete(tt.args.ctx, tt.args.chatId)
 			require.Equal(t, tt.err, err)
-			require.Equal(t, tt.want, id)
 		})
 	}
 }

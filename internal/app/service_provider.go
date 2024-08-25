@@ -4,11 +4,12 @@ import (
 	"context"
 	"log"
 
+	"github.com/ukrainskykirill/platform_common/pkg/closer"
+	"github.com/ukrainskykirill/platform_common/pkg/db/pg"
+	"github.com/ukrainskykirill/platform_common/pkg/db/transaction"
+	"github.com/ukrainskykirill/platform_common/pkg/db"
+
 	api "github.com/ukrainskykirill/chat-server/internal/api/chats"
-	"github.com/ukrainskykirill/chat-server/internal/client/db"
-	"github.com/ukrainskykirill/chat-server/internal/client/db/pg"
-	"github.com/ukrainskykirill/chat-server/internal/client/db/transaction"
-	"github.com/ukrainskykirill/chat-server/internal/closer"
 	"github.com/ukrainskykirill/chat-server/internal/config"
 	"github.com/ukrainskykirill/chat-server/internal/repository"
 	chatRepo "github.com/ukrainskykirill/chat-server/internal/repository/chats"
