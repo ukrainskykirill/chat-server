@@ -3,9 +3,8 @@ package db
 import (
 	"context"
 
-	"github.com/jackc/pgx/v4"
-
 	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v4"
 )
 
 type Handler func(ctx context.Context) error

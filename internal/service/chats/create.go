@@ -5,7 +5,7 @@ import (
 )
 
 func (s *chatServ) Create(ctx context.Context, userIDs []int64) (int64, error) {
-	isRegular := len(userIDs) > 2
+	isRegular := len(userIDs) <= 2
 
 	var chatID int64
 	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
@@ -14,7 +14,6 @@ func (s *chatServ) Create(ctx context.Context, userIDs []int64) (int64, error) {
 		if errTx != nil {
 			return errTx
 		}
-
 		errTx = s.chatRepo.CreateChatUsers(ctx, chatID, userIDs)
 		if errTx != nil {
 			return errTx
