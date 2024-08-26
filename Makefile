@@ -3,7 +3,7 @@ include .env
 LOCAL_BIN:=$(CURDIR)/bin
 LOCAL_MIGRATION_DIR=$(MIGRATION_DIR)
 LOCAL_MIGRATION_DSN="host=localhost port=$(DB_PORT) dbname=$(DB_DATABASE_NAME) user=$(DB_USER) password=$(DB_PASSWORD) sslmode=disable"
-POSTGRES_DSN="postgresql://postgres:postgres@localhost:5432/chat-server?sslmode=disable"
+POSTGRES_DSN="postgresql://postgres:postgres@localhost:5432/chat_server?sslmode=disable"
 
 install-deps:
 	GOBIN=$(LOCAL_BIN) go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1
@@ -48,7 +48,7 @@ install-goose:
 	GOBIN=$(LOCAL_BIN) go install github.com/pressly/goose/v3/cmd/goose@latest
 
 local-migration-status:
-	$(LOCAL_BIN)/goose -dir ${LOCAL_MIGRATION_DIR} postgres ${LOCAL_MIGRATION_DSN} status -v
+	$(LOCAL_BIN)/goose -dir ${LOCAL_MIGRATION_DIR} -dbstring ${POSTGRES_DSN} status -v
 
 local-migration-up:
 	$(LOCAL_BIN)/goose -dir ${LOCAL_MIGRATION_DIR} postgres ${LOCAL_MIGRATION_DSN} up -v

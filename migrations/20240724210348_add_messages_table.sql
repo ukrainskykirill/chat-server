@@ -2,9 +2,10 @@
 -- +goose StatementBegin
 CREATE TABLE messages (
     id serial PRIMARY KEY,
-    chat_user_id integer,
-    text varchar(5000),
-    timestamp timestamp
+    chat_user_id integer NOT NULL,
+    text TEXT NOT NULL,
+    created_at timestamp NOT NULL,
+    updated_at timestamp NOT NULL
 );
 -- +goose StatementEnd
 
