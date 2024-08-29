@@ -10,8 +10,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
+	"github.com/ukrainskykirill/platform_common/pkg/closer"
 
-	"github.com/ukrainskykirill/chat-server/internal/closer"
 	"github.com/ukrainskykirill/chat-server/internal/config"
 	gchat "github.com/ukrainskykirill/chat-server/pkg/chat_v1"
 )

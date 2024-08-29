@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/fatih/color"
+	"github.com/ukrainskykirill/platform_common/pkg/db"
 
-	"github.com/ukrainskykirill/chat-server/internal/client/db"
 	prError "github.com/ukrainskykirill/chat-server/internal/error"
 	"github.com/ukrainskykirill/chat-server/internal/repository"
 )
