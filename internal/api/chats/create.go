@@ -2,6 +2,7 @@ package chats
 
 import (
 	"context"
+	// "fmt"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -10,6 +11,9 @@ import (
 )
 
 func (i *Implementation) Create(ctx context.Context, req *gchat.CreateRequest) (*gchat.CreateResponse, error) {
+	// if req.UserIDs[0] == 1 {
+	// 	return nil, status.Error(codes.Internal, fmt.Errorf("invalid req %d", req.UserIDs[0]).Error())
+	// }
 	chatID, err := i.chatService.Create(ctx, req.UserIDs)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())

@@ -1,5 +1,9 @@
 version: '3'
 
+volumes:
+  prometheus_data:
+  grafana_data:
+
 services:
   pg:
     image: postgres:15-alpine3.20
@@ -10,10 +14,37 @@ services:
     ports:
       - "${DB_PORT}:5432"
 
-  migrator:
-    build:
-      context: .
-      dockerfile: migration.Dockerfile
-    restart: on-failure
+  prometheus:
+    image: prom/prometheus:v2.37.9
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./alerts.yml:/etc/prometheus/alerts.yml
+      - prometheus_data:/prometheus
+    
+  graphana:
+    image: grafana/grafana-oss:10.0.3
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana 
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter
+    ports:
+      - 9187:9187
     environment:
-      DB_HOST: pg
+      DATA_SOURCE_NAME: "postgresql://postgres:postgres@pg:5432/chat_server?sslmode=disable"
+    links:
+      - pg
+      - prometheus
+
+
+  # migrator:
+  #   build:
+  #     context: .
+  #     dockerfile: migration.Dockerfile
+  #   restart: on-failure
+  #   environment:
+  #     DB_HOST: pg
