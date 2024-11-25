@@ -39,7 +39,7 @@ func main() {
 		fmt.Println(fmt.Sprintf(color.RedString("chat creation error %v", err)))
 	}
 
-	log.Printf(fmt.Sprintf("%s: %s\n", color.GreenString("Chat created"), color.YellowString(string(chatID))))
+	log.Printf(fmt.Sprintf("%s: %s\n", color.GreenString("Chat created"), color.YellowString(strconv.Itoa(int(chatID)))))
 
 	wg := sync.WaitGroup{}
 	wg.Add(2)
