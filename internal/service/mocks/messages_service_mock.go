@@ -2,7 +2,7 @@
 
 package mocks
 
-//go:generate minimock -i github.com/ukrainskykirill/chat-server/internal/service.MessagesService -o messages_service_minimock.go -n MessagesServiceMock -p mocks
+//go:generate minimock -i github.com/ukrainskykirill/chat-server/internal/service.MessagesService -o messages_service_mock_test.go -n MessagesServiceMock -p service
 
 import (
 	"context"
@@ -11,10 +11,11 @@ import (
 	mm_time "time"
 
 	"github.com/gojuno/minimock/v3"
+
 	"github.com/ukrainskykirill/chat-server/internal/model"
 )
 
-// MessagesServiceMock implements service.MessagesService
+// MessagesServiceMock implements MessagesService
 type MessagesServiceMock struct {
 	t          minimock.Tester
 	finishOnce sync.Once
@@ -26,7 +27,7 @@ type MessagesServiceMock struct {
 	CreateMock          mMessagesServiceMockCreate
 }
 
-// NewMessagesServiceMock returns a mock for service.MessagesService
+// NewMessagesServiceMock returns a mock for MessagesService
 func NewMessagesServiceMock(t minimock.Tester) *MessagesServiceMock {
 	m := &MessagesServiceMock{t: t}
 
@@ -237,7 +238,7 @@ func (mmCreate *mMessagesServiceMockCreate) invocationsDone() bool {
 	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
 }
 
-// Create implements service.MessagesService
+// Create implements MessagesService
 func (mmCreate *MessagesServiceMock) Create(ctx context.Context, msgIn *model.MessageIn) (err error) {
 	mm_atomic.AddUint64(&mmCreate.beforeCreateCounter, 1)
 	defer mm_atomic.AddUint64(&mmCreate.afterCreateCounter, 1)

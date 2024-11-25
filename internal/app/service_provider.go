@@ -5,9 +5,9 @@ import (
 	"log"
 
 	"github.com/ukrainskykirill/platform_common/pkg/closer"
+	"github.com/ukrainskykirill/platform_common/pkg/db"
 	"github.com/ukrainskykirill/platform_common/pkg/db/pg"
 	"github.com/ukrainskykirill/platform_common/pkg/db/transaction"
-	"github.com/ukrainskykirill/platform_common/pkg/db"
 
 	api "github.com/ukrainskykirill/chat-server/internal/api/chats"
 	"github.com/ukrainskykirill/chat-server/internal/config"
@@ -17,6 +17,7 @@ import (
 	"github.com/ukrainskykirill/chat-server/internal/service"
 	chatServ "github.com/ukrainskykirill/chat-server/internal/service/chats"
 	msgServ "github.com/ukrainskykirill/chat-server/internal/service/messages"
+	streamServ "github.com/ukrainskykirill/chat-server/internal/service/stream"
 )
 
 type serviceProvider struct {
@@ -29,8 +30,9 @@ type serviceProvider struct {
 	chatRepo repository.ChatsRepository
 	msgRepo  repository.MessagesRepository
 
-	chatServ service.ChatsService
-	msgServ  service.MessagesService
+	chatServ   service.ChatsService
+	msgServ    service.MessagesService
+	streamServ service.StreamService
 
 	api *api.Implementation
 }
@@ -102,10 +104,18 @@ func (sp *serviceProvider) MsgRepo(ctx context.Context) repository.MessagesRepos
 	return sp.msgRepo
 }
 
+func (sp *serviceProvider) StreamService(ctx context.Context) service.StreamService {
+	if sp.streamServ == nil {
+		sp.streamServ = streamServ.NewStreamService()
+	}
+
+	return sp.streamServ
+}
+
 func (sp *serviceProvider) ChatService(ctx context.Context) service.ChatsService {
 	if sp.chatServ == nil {
 		sp.chatServ = chatServ.NewServ(
-			sp.TxManager(ctx), sp.ChatRepo(ctx), sp.MsgRepo(ctx),
+			sp.TxManager(ctx), sp.ChatRepo(ctx), sp.MsgRepo(ctx), sp.StreamService(ctx),
 		)
 	}
 
@@ -114,7 +124,7 @@ func (sp *serviceProvider) ChatService(ctx context.Context) service.ChatsService
 
 func (sp *serviceProvider) MsgService(ctx context.Context) service.MessagesService {
 	if sp.msgServ == nil {
-		sp.msgServ = msgServ.NewServ(sp.MsgRepo(ctx), sp.ChatRepo(ctx))
+		sp.msgServ = msgServ.NewServ(sp.MsgRepo(ctx), sp.ChatRepo(ctx), sp.StreamService(ctx))
 	}
 
 	return sp.msgServ

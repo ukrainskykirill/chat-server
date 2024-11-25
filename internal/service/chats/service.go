@@ -8,15 +8,22 @@ import (
 )
 
 type chatServ struct {
-	txManager db.TxManager
-	chatRepo  repository.ChatsRepository
-	msgRepo   repository.MessagesRepository
+	txManager     db.TxManager
+	chatRepo      repository.ChatsRepository
+	msgRepo       repository.MessagesRepository
+	streamService service.StreamService
 }
 
-func NewServ(txManager db.TxManager, chatsRepo repository.ChatsRepository, msgRepo repository.MessagesRepository) service.ChatsService {
+func NewServ(
+	txManager db.TxManager,
+	chatsRepo repository.ChatsRepository,
+	msgRepo repository.MessagesRepository,
+	streamService service.StreamService,
+) service.ChatsService {
 	return &chatServ{
-		txManager: txManager,
-		chatRepo:  chatsRepo,
-		msgRepo:   msgRepo,
+		txManager:     txManager,
+		chatRepo:      chatsRepo,
+		msgRepo:       msgRepo,
+		streamService: streamService,
 	}
 }

@@ -13,7 +13,9 @@ import (
 
 	"github.com/ukrainskykirill/chat-server/internal/repository"
 	repoMocks "github.com/ukrainskykirill/chat-server/internal/repository/mocks"
+	"github.com/ukrainskykirill/chat-server/internal/service"
 	"github.com/ukrainskykirill/chat-server/internal/service/chats"
+	svcMocks "github.com/ukrainskykirill/chat-server/internal/service/mocks"
 )
 
 func TestDelete(t *testing.T) {
@@ -21,6 +23,7 @@ func TestDelete(t *testing.T) {
 	type chatsRepoMockFunc func(mc *minimock.Controller) repository.ChatsRepository
 	type msgRepoMockFunc func(mc *minimock.Controller) repository.MessagesRepository
 	type txManagerMockFunc func(f db.Handler, mc *minimock.Controller) db.TxManager
+	type streamSericeMockFunc func(mc *minimock.Controller) service.StreamService
 
 	type args struct {
 		ctx    context.Context
@@ -37,12 +40,13 @@ func TestDelete(t *testing.T) {
 	defer t.Cleanup(mc.Finish)
 
 	tests := []struct {
-		name          string
-		args          args
-		err           error
-		chatsRepoMock chatsRepoMockFunc
-		msgRepoMock   msgRepoMockFunc
-		txManagerMock txManagerMockFunc
+		name              string
+		args              args
+		err               error
+		chatsRepoMock     chatsRepoMockFunc
+		msgRepoMock       msgRepoMockFunc
+		txManagerMock     txManagerMockFunc
+		streamServiceMock streamSericeMockFunc
 	}{
 		{
 			name: "success case",
@@ -69,6 +73,10 @@ func TestDelete(t *testing.T) {
 				})
 				return mock
 			},
+			streamServiceMock: func(mc *minimock.Controller) service.StreamService {
+				mock := svcMocks.NewStreamServiceMock(mc)
+				return mock
+			},
 		},
 		{
 			name: "error case 1",
@@ -91,6 +99,10 @@ func TestDelete(t *testing.T) {
 				mock.ReadCommittedMock.Set(func(ctx context.Context, f db.Handler) (err error) {
 					return f(ctx)
 				})
+				return mock
+			},
+			streamServiceMock: func(mc *minimock.Controller) service.StreamService {
+				mock := svcMocks.NewStreamServiceMock(mc)
 				return mock
 			},
 		},
@@ -116,6 +128,10 @@ func TestDelete(t *testing.T) {
 				mock.ReadCommittedMock.Set(func(ctx context.Context, f db.Handler) (err error) {
 					return f(ctx)
 				})
+				return mock
+			},
+			streamServiceMock: func(mc *minimock.Controller) service.StreamService {
+				mock := svcMocks.NewStreamServiceMock(mc)
 				return mock
 			},
 		},
@@ -144,6 +160,10 @@ func TestDelete(t *testing.T) {
 				})
 				return mock
 			},
+			streamServiceMock: func(mc *minimock.Controller) service.StreamService {
+				mock := svcMocks.NewStreamServiceMock(mc)
+				return mock
+			},
 		},
 	}
 
@@ -154,6 +174,7 @@ func TestDelete(t *testing.T) {
 
 			chatsRepo := tt.chatsRepoMock(mc)
 			msgRepo := tt.msgRepoMock(mc)
+			streamService := tt.streamServiceMock(mc)
 
 			txManager := tt.txManagerMock(
 				func(context.Context) error {
@@ -174,7 +195,7 @@ func TestDelete(t *testing.T) {
 			)
 
 			service := chats.NewServ(
-				txManager, chatsRepo, msgRepo,
+				txManager, chatsRepo, msgRepo, streamService,
 			)
 
 			err := service.Delete(tt.args.ctx, tt.args.chatId)
