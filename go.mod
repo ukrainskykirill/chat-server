@@ -6,6 +6,7 @@ require (
 	github.com/brianvoe/gofakeit/v7 v7.0.4
 	github.com/fatih/color v1.17.0
 	github.com/gojuno/minimock/v3 v3.3.14
+	github.com/prometheus/client_golang v1.20.5
 	github.com/stretchr/testify v1.9.0
 	github.com/ukrainskykirill/platform_common v0.0.0-20240825104146-2cb744456fa1
 	google.golang.org/grpc v1.65.0
@@ -20,7 +21,6 @@ require (
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/prometheus/client_golang v1.20.5 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.55.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect

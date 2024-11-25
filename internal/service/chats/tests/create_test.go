@@ -13,7 +13,9 @@ import (
 
 	"github.com/ukrainskykirill/chat-server/internal/repository"
 	repoMocks "github.com/ukrainskykirill/chat-server/internal/repository/mocks"
+	"github.com/ukrainskykirill/chat-server/internal/service"
 	"github.com/ukrainskykirill/chat-server/internal/service/chats"
+	svcMocks "github.com/ukrainskykirill/chat-server/internal/service/mocks"
 )
 
 func TestCreate(t *testing.T) {
@@ -21,6 +23,7 @@ func TestCreate(t *testing.T) {
 	type chatsRepoMockFunc func(mc *minimock.Controller) repository.ChatsRepository
 	type msgRepoMockFunc func(mc *minimock.Controller) repository.MessagesRepository
 	type txManagerMockFunc func(f db.Handler, mc *minimock.Controller) db.TxManager
+	type streamSericeMockFunc func(mc *minimock.Controller) service.StreamService
 
 	type args struct {
 		ctx       context.Context
@@ -40,13 +43,14 @@ func TestCreate(t *testing.T) {
 	defer t.Cleanup(mc.Finish)
 
 	tests := []struct {
-		name          string
-		args          args
-		want          int64
-		err           error
-		chatsRepoMock chatsRepoMockFunc
-		msgRepoMock   msgRepoMockFunc
-		txManagerMock txManagerMockFunc
+		name              string
+		args              args
+		want              int64
+		err               error
+		chatsRepoMock     chatsRepoMockFunc
+		msgRepoMock       msgRepoMockFunc
+		txManagerMock     txManagerMockFunc
+		streamServiceMock streamSericeMockFunc
 	}{
 		{
 			name: "success case",
@@ -74,6 +78,11 @@ func TestCreate(t *testing.T) {
 				})
 				return mock
 			},
+			streamServiceMock: func(mc *minimock.Controller) service.StreamService {
+				mock := svcMocks.NewStreamServiceMock(mc)
+				mock.AddToChannelMock.Expect(ctx, id)
+				return mock
+			},
 		},
 		{
 			name: "error case 1",
@@ -98,6 +107,10 @@ func TestCreate(t *testing.T) {
 				mock.ReadCommittedMock.Set(func(ctx context.Context, f db.Handler) (err error) {
 					return f(ctx)
 				})
+				return mock
+			},
+			streamServiceMock: func(mc *minimock.Controller) service.StreamService {
+				mock := svcMocks.NewStreamServiceMock(mc)
 				return mock
 			},
 		},
@@ -127,6 +140,10 @@ func TestCreate(t *testing.T) {
 				})
 				return mock
 			},
+			streamServiceMock: func(mc *minimock.Controller) service.StreamService {
+				mock := svcMocks.NewStreamServiceMock(mc)
+				return mock
+			},
 		},
 	}
 
@@ -137,6 +154,7 @@ func TestCreate(t *testing.T) {
 
 			chatsRepo := tt.chatsRepoMock(mc)
 			msgRepo := tt.msgRepoMock(mc)
+			streamService := tt.streamServiceMock(mc)
 
 			txManager := tt.txManagerMock(
 				func(context.Context) error {
@@ -153,7 +171,7 @@ func TestCreate(t *testing.T) {
 			)
 
 			service := chats.NewServ(
-				txManager, chatsRepo, msgRepo,
+				txManager, chatsRepo, msgRepo, streamService,
 			)
 
 			id, err := service.Create(tt.args.ctx, tt.args.userIDs)

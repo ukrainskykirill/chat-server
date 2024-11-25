@@ -17,5 +17,7 @@ func (s *messagesServ) Create(ctx context.Context, msgIn *model.MessageIn) error
 	if err != nil {
 		return err
 	}
+
+	s.streamService.AddMessageToChat(ctx, msgIn)
 	return nil
 }

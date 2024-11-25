@@ -10,7 +10,19 @@ option go_package = "github.com/ukrainskykirill/chat-server/pkg/chat_v1;chat_v1"
 service ChatV1 {
     rpc Create(CreateRequest) returns (CreateResponse);
     rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
+    rpc ConnectChat(ConnectChatRequest) returns (stream Message);
     rpc SendMessage(SendMessageRequest) returns (google.protobuf.Empty);
+}
+
+message ConnectChatRequest {
+    string chat_id = 1;
+    string user_id = 2;
+}
+
+message Message {
+    string user_id = 1;
+    string text = 2;
+    google.protobuf.Timestamp timestamp = 3;
 }
 
 message CreateRequest {

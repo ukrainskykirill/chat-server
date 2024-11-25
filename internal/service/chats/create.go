@@ -25,5 +25,7 @@ func (s *chatServ) Create(ctx context.Context, userIDs []int64) (int64, error) {
 		return 0, err
 	}
 
+	s.streamService.AddToChannel(ctx, chatID)
+
 	return chatID, nil
 }

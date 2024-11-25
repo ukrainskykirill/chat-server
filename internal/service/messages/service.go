@@ -6,13 +6,19 @@ import (
 )
 
 type messagesServ struct {
-	chatsRepo repository.ChatsRepository
-	msgRepo   repository.MessagesRepository
+	chatsRepo     repository.ChatsRepository
+	msgRepo       repository.MessagesRepository
+	streamService service.StreamService
 }
 
-func NewServ(msgRepo repository.MessagesRepository, chatsRepo repository.ChatsRepository) service.MessagesService {
+func NewServ(
+	msgRepo repository.MessagesRepository,
+	chatsRepo repository.ChatsRepository,
+	streamService service.StreamService,
+) service.MessagesService {
 	return &messagesServ{
-		msgRepo:   msgRepo,
-		chatsRepo: chatsRepo,
+		msgRepo:       msgRepo,
+		chatsRepo:     chatsRepo,
+		streamService: streamService,
 	}
 }

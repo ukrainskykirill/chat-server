@@ -13,13 +13,16 @@ import (
 	"github.com/ukrainskykirill/chat-server/internal/model"
 	"github.com/ukrainskykirill/chat-server/internal/repository"
 	repoMocks "github.com/ukrainskykirill/chat-server/internal/repository/mocks"
+	"github.com/ukrainskykirill/chat-server/internal/service"
 	"github.com/ukrainskykirill/chat-server/internal/service/messages"
+	svcMocks "github.com/ukrainskykirill/chat-server/internal/service/mocks"
 )
 
 func TestSendMsg(t *testing.T) {
 	t.Parallel()
 	type chatsRepoMockFunc func(mc *minimock.Controller) repository.ChatsRepository
 	type msgRepoMockFunc func(mc *minimock.Controller) repository.MessagesRepository
+	type streamSericeMockFunc func(mc *minimock.Controller) service.StreamService
 
 	type args struct {
 		ctx   context.Context
@@ -48,11 +51,12 @@ func TestSendMsg(t *testing.T) {
 	defer t.Cleanup(mc.Finish)
 
 	tests := []struct {
-		name          string
-		args          args
-		err           error
-		chatsRepoMock chatsRepoMockFunc
-		msgRepoMock   msgRepoMockFunc
+		name              string
+		args              args
+		err               error
+		chatsRepoMock     chatsRepoMockFunc
+		msgRepoMock       msgRepoMockFunc
+		streamServiceMock streamSericeMockFunc
 	}{
 		{
 			name: "success case",
@@ -71,6 +75,11 @@ func TestSendMsg(t *testing.T) {
 				mock.CreateMock.Expect(ctx, &msgIn).Return(nil)
 				return mock
 			},
+			streamServiceMock: func(mc *minimock.Controller) service.StreamService {
+				mock := svcMocks.NewStreamServiceMock(mc)
+				mock.AddMessageToChatMock.Expect(ctx, &msgIn)
+				return mock
+			},
 		},
 		{
 			name: "error case 1",
@@ -86,6 +95,10 @@ func TestSendMsg(t *testing.T) {
 			},
 			msgRepoMock: func(mc *minimock.Controller) repository.MessagesRepository {
 				mock := repoMocks.NewMessagesRepositoryMock(mc)
+				return mock
+			},
+			streamServiceMock: func(mc *minimock.Controller) service.StreamService {
+				mock := svcMocks.NewStreamServiceMock(mc)
 				return mock
 			},
 		},
@@ -106,6 +119,10 @@ func TestSendMsg(t *testing.T) {
 				mock.CreateMock.Expect(ctx, &msgIn).Return(repoErr)
 				return mock
 			},
+			streamServiceMock: func(mc *minimock.Controller) service.StreamService {
+				mock := svcMocks.NewStreamServiceMock(mc)
+				return mock
+			},
 		},
 	}
 
@@ -116,9 +133,10 @@ func TestSendMsg(t *testing.T) {
 
 			chatsRepo := tt.chatsRepoMock(mc)
 			msgRepo := tt.msgRepoMock(mc)
+			streamService := tt.streamServiceMock(mc)
 
 			service := messages.NewServ(
-				msgRepo, chatsRepo,
+				msgRepo, chatsRepo, streamService,
 			)
 
 			err := service.Create(tt.args.ctx, tt.args.msgIn)
